@@ -3,7 +3,7 @@ import { AppBar, Badge, Box, Button, IconButton, Input, InputAdornment, Link, To
 import NextLink from "next/link"
 import { useRouter } from "next/router"
 import { useContext, useState } from "react"
-import { UiContext } from "../../context"
+import { CartContext, UiContext } from "../../context"
 
 export const Navbar = () => {
 
@@ -14,7 +14,7 @@ export const Navbar = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [isSearchVisible, setIsSearchVisible] = useState(false)
 
-    
+    const { numberOfItems } = useContext(CartContext)
     const onSearchTerm = () => {
             
         if (searchTerm.trim().length === 0 ) return;
@@ -109,7 +109,7 @@ export const Navbar = () => {
                 <NextLink href='/cart' passHref>
                     <Link>
                         <IconButton>
-                            <Badge badgeContent={ 2 } color="secondary">
+                            <Badge badgeContent={ numberOfItems > 9 ? '+9' : numberOfItems } color="secondary">
                                 <ShoppingCartOutlined/>
                             </Badge>
                         </IconButton>

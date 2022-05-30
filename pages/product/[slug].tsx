@@ -5,11 +5,13 @@ import { ItemCounter } from '../../components/ui';
 // import { initialData } from "../../database/products"
 // import { useProducts } from '../../hooks/useProducts';
 // import { useRouter } from 'next/router';
-import { IProduct } from '../../interfaces/products';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useState, useContext } from 'react';
 import { GetServerSideProps } from 'next'
 import { dbProducts } from '../../database';
+import { ICartProduct, IProduct, ISize } from '../../interfaces';
+import { useRouter } from 'next/router';
+import { CartContext } from '../../context';
 
 // const product = initialData.products[0];
 
@@ -31,7 +33,46 @@ const ProductPage: NextPage<PropsWithChildren<Props>> = ( { product } ) => {
     //     return <h1> Producto no existe</h1>
     // }
 
+    const [tempCartProduct, setTempCartProduct] = useState<ICartProduct>({
+        _id : product._id,
+        image : product.images[0],
+        price : product.price,
+        size : undefined,
+        slug : product.slug,
+        title : product.title,
+        gender : product.gender,
+        quantity : 1,
+    })
 
+
+    const router = useRouter();
+
+    const { addProductToCart } = useContext(CartContext)
+
+    const selectedSize = ( size: ISize ) => {
+    
+        setTempCartProduct( currentProduct => ({...currentProduct, size }) )
+
+    }
+
+    const onAddProduct = () => {
+            
+        if ( !tempCartProduct.size) return;
+        
+        addProductToCart(tempCartProduct);
+        
+        router.push('/cart');
+
+    }
+
+    const onUpdateQuantity = (quantity : number) => {
+            
+        setTempCartProduct( currentProduct => ({
+            ...currentProduct,
+            quantity
+        }))
+    
+    }
 
     return (
         <ShopLayout title={ product.title } pageDescription={ product.description }>
@@ -49,20 +90,44 @@ const ProductPage: NextPage<PropsWithChildren<Props>> = ( { product } ) => {
                         {/* Cantidad */}
                         <Box sx={{ my: 2 }}>
                             <Typography variant="subtitle2">Cantidad</Typography>
-                            <ItemCounter/>
+                            <ItemCounter
+                                currentValue= { tempCartProduct.quantity }
+                                updatedQuantity= { onUpdateQuantity }
+                                maxValue = { product.inStock > 10 ? 10 : product.inStock }
+                            />
                             <SizeSelector 
-                                selectedSize={ product.sizes[2] } 
-                                sizes={ product.sizes }
+                                selectedSize={tempCartProduct.size}
+                                sizes={product.sizes} 
+                                onSelectedSize= { ( size ) => selectedSize( size ) }
                             />
 
                         </Box>
 
                         {/* Agregar al carrito */}
-                        <Button color="secondary" className='circular-btn'>
-                            Agregar al carrito
-                        </Button>
 
-                        <Chip label="No hay disponibles" color="error" variant="outlined" />
+                        {
+                            (product.inStock > 0)
+                            ? (
+                                <Button 
+                                    color="secondary" 
+                                    className='circular-btn'
+                                    onClick={ onAddProduct }
+                                >
+                                    {
+                                        tempCartProduct.size
+                                        ?
+                                        'Agregar al carrito'
+                                        : 'Seleccione una talla'
+                                    }
+                                </Button>
+
+                            ) :
+                            (
+                                <Chip label="No hay disponibles" color="error" variant="outlined" />
+                            )
+                        }
+
+
 
                         {/* Description */}
 
