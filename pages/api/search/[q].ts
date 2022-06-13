@@ -26,7 +26,6 @@ const searchProducts = async(req: NextApiRequest, res: NextApiResponse<Data>) =>
 
     let { q = ''} = req.query;
 
-    console.log('q.length', q)
 
     if ( q.length === 0 )
     {

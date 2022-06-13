@@ -1,6 +1,8 @@
 import { ErrorOutline } from "@mui/icons-material";
 import { Box, Button, Chip, Grid, Link, TextField, Typography } from "@mui/material"
 import axios from "axios";
+import { GetServerSideProps } from "next";
+import { getSession, signIn } from "next-auth/react";
 import NextLink from 'next/link';
 import { useRouter } from "next/router";
 import { useContext, useState } from "react";
@@ -38,8 +40,9 @@ const RegisterPage = () => {
             return;
         }
         
-        const destination = router.query.p?.toString() || '/';
-        router.replace(destination);
+        // const destination = router.query.p?.toString() || '/';
+        // router.replace(destination);
+        await signIn( 'credentials', { email, password } );
         
     }
 
@@ -127,6 +130,28 @@ const RegisterPage = () => {
             </Box>
         </AuthLayout>
     )
+}
+
+
+export const getServerSideProps: GetServerSideProps = async ( { req, query } ) => {
+    const session = await getSession( { req } );
+
+    const { p = '/' } = query as { p : string };
+
+    if ( session ) {
+        return {
+            redirect: {
+                destination: p,
+                permanent: false
+            }
+        }
+    }
+
+    return {
+        props: {
+            
+        }
+    }
 }
 
 export default RegisterPage

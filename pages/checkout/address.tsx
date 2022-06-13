@@ -1,8 +1,8 @@
-import { Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material"
+import { Box, Button, FormControl, FormHelperText, Grid, Input, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material"
 import Cookies from "js-cookie";
 import { useRouter } from "next/router";
-import { useContext } from "react";
-import { useForm } from "react-hook-form";
+import { useContext, useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { ShopLayout } from "../../components/layouts"
 import { CartContext } from "../../context";
 import { countries } from "../../utils";
@@ -38,9 +38,24 @@ const AdrressPage = () => {
     const router = useRouter();
     const { updateAddress } = useContext(CartContext);
 
-    const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
-        defaultValues: getAddressFromCookies()
+    const { register, handleSubmit, watch, formState: { errors }, reset, control } = useForm<FormData>({
+        defaultValues: {
+
+            firstName  :  '',
+            lastName  :   '',
+            address   :   '',
+            address2  :   '',
+            zip       :   '',
+            city      :   '',
+            country   :   '',
+            phone     :   ''
+
+        }
     });
+
+    useEffect(() => {
+        reset( getAddressFromCookies() );
+    }, [reset])
 
     const onSubmitAddress = ( data: FormData ) => {
             
@@ -141,13 +156,14 @@ const AdrressPage = () => {
                 </Grid>
 
                         
-                <Grid item xs={12} sm={6}>
+                {/* <Grid item xs={12} sm={6}>
                     <FormControl fullWidth>
                         <TextField
                             select
                             variant="filled"
                             label="País"
-                            defaultValue={ Cookies.get('country') || 'CHL'   }
+                            // defaultValue={ Cookies.get('country') || 'CHL'   }
+                            defaultValue={''}
                             { 
                                 ...register('country',{
                                     required: 'Este campo es requerido'
@@ -166,7 +182,8 @@ const AdrressPage = () => {
                             }
                         </TextField>
                     </FormControl>
-                </Grid>
+                </Grid> */}
+
                 <Grid item xs={12} sm={6}>
                     <TextField 
                         label="Teléfono" 
@@ -181,6 +198,39 @@ const AdrressPage = () => {
                         helperText={ errors.phone?.message } 
                     />
                 </Grid>
+                
+                <Grid item xs={12} sm={6}>
+               
+                    
+                    <Controller
+                        name="country"
+                        defaultValue=""
+                        control={control}
+                        render={({ field }) => <Select 
+                        {...field} 
+                        { 
+                            ...register('country',{
+                                required: 'Este campo es requerido'
+                            })
+                        }
+                        label="Pais"
+                        variant="filled"
+                        error={ !!errors.country }
+                        fullWidth>
+                            {countries.map((country) => (
+                                <MenuItem key={country.code} value={country.code}>
+                                    {country.name}
+                                </MenuItem>
+                                ))}
+                    </Select>}
+                    
+                    />
+                {errors.country && <FormHelperText className="MuiFormHelperText-root Mui-error MuiFormHelperText-sizeMedium MuiFormHelperText-contained css-1wc848c-MuiFormHelperText-root">Seleccione País...</FormHelperText> }
+                </Grid>
+
+
+
+
             </Grid>
             
             <Box sx={{ mt: 5 }} display='flex' justifyContent={'center'} >
