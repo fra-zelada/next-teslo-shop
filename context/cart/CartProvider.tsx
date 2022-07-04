@@ -2,8 +2,6 @@ import { FC, PropsWithChildren, useEffect, useReducer } from 'react';
 import { ICartProduct, IOrder, ShippingAddress } from '../../interfaces';
 import { cartReducer, CartContext } from './';
 import Cookie from 'js-cookie'
-import { IProduct } from '../../interfaces/';
-import { OrderSummary } from '../../components/cart/OrderSummary';
 import { tesloApi } from '../../api';
 import axios from 'axios';
 

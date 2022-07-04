@@ -1,27 +1,13 @@
-import { CreditCardOffOutlined, CreditScoreOutlined } from "@mui/icons-material"
-import { Box,  Card, CardContent, Chip, CircularProgress, Divider, Grid, Link, Typography } from "@mui/material"
+import { AirplaneTicketOutlined, CreditCardOffOutlined, CreditScoreOutlined } from "@mui/icons-material"
+import { Box,  Card, CardContent, Chip,     Divider,     Grid,     Typography } from "@mui/material"
 import { GetServerSideProps, NextPage } from "next"
-import { PayPalButtons } from "@paypal/react-paypal-js";
-import { getSession } from "next-auth/react"
-import { CartList, OrderSummary } from "../../components/cart"
-import { ShopLayout } from "../../components/layouts"
-import { dbOrders } from "../../database"
-import { IOrder } from '../../interfaces';
-import { tesloApi } from "../../api";
-import { useRouter } from "next/router";
-import { useState } from "react";
+import { CartList, OrderSummary } from "../../../components/cart"
+import { AdminLayout } from "../../../components/layouts"
+import { dbOrders } from "../../../database"
+import { IOrder } from '../../../interfaces';
 
-export type OrderResponseBody = {
-    
-    id: string;
-    status:
-        | "COMPLETED"
-        | "SAVED"
-        | "APPROVED"
-        | "VOIDED"
-        | "PAYER_ACTION_REQUIRED";
 
-};
+
 
 interface Props {
     order: IOrder
@@ -29,34 +15,16 @@ interface Props {
 
 const OrderPage: NextPage<Props> = ({ order }) => {
 
-    const router = useRouter();
     const { shippingAddress } = order;
-    const [isPaying, setIsPaying] = useState(false);
 
-    const onOrderCompleted = async( details: OrderResponseBody ) => {
-
-
-        if ( details.status !== 'COMPLETED'){
-            return alert ('No hay pago en Paypal')
-        }
-        setIsPaying(true);
-        try {
-            const { data } = await tesloApi.post(`/orders/pay`, {
-                transactionId: details.id ,
-                orderId: order._id
-            })
-            router.reload();
-        } catch (error) {
-            setIsPaying(false);
-            console.log(error)
-            alert('Error')
-        }
-
-    }
-
+    
     return (
-        <ShopLayout title="Resumen de orden 1234513" pageDescription={"Resumen de la orden"}>
-            <Typography variant="h1" component={'h1'}>Orden: { order._id }</Typography>
+        <AdminLayout
+            title="Resumen de orden"
+            subTitle={`OrdenId: ${order._id}`}
+            icon={<AirplaneTicketOutlined/>}
+        >
+            {/* <Typography variant="h1" component={'h1'}>Orden: { order._id }</Typography> */}
                 
 
                 {
@@ -131,17 +99,17 @@ const OrderPage: NextPage<Props> = ({ order }) => {
 
                                 <Box sx={{ mt: 3 }} display="flex" flexDirection={"column"} >
                                     
-                                    <Box 
+                                    {/* <Box 
                                         display={"flex"} 
                                         justifyContent="center" 
                                         className="fadeIn"
-                                        sx={{ display: isPaying ? 'flex' : 'none' }}
+                                        sx={{ display: 'flex' }}
                                     >
                                         <CircularProgress />
-                                    </Box>
+                                    </Box> */}
                                     <Box
                                         flexDirection={"column"}
-                                        sx={{ display: isPaying ? 'none' : 'flex', flex: 1 }}
+                                        sx={{ display: 'flex', flex: 1 }}
                                     >
 
                                         {
@@ -155,29 +123,14 @@ const OrderPage: NextPage<Props> = ({ order }) => {
                                             />
                                             )
                                             : (
-                                                <PayPalButtons 
-                                                    createOrder={(data, actions) => {
-                                                        return actions.order.create({
-                                                            purchase_units: [
-                                                                {
-                                                                    amount: {
-                                                                        value: `${ order.total }`,
-                                                                    },
-                                                                },
-                                                            ],
-                                                        });
-                                                    }}
-                                                    onApprove={(data, actions) => {
-                                                        return actions.order!.capture().then((details) => {
-                                                            
-                                                            onOrderCompleted( details );
-                                                            // console.log(details)
-                                                            // const name = details.payer.name!.given_name ;
-
-                                                        });
-                                                    }}
-                                                />
-                                                )
+                                                <Chip
+                                                sx={{ my:2 }}
+                                                label="Orden no pagada"
+                                                variant="outlined"
+                                                color="error"
+                                                icon={ <CreditScoreOutlined/> }
+                                            />
+                                            )
 
                                         }
                                     </Box>
@@ -191,7 +144,7 @@ const OrderPage: NextPage<Props> = ({ order }) => {
                 </Grid>
             
 
-        </ShopLayout>
+        </AdminLayout>
     )
 }
 
@@ -200,36 +153,28 @@ const OrderPage: NextPage<Props> = ({ order }) => {
 
 export const getServerSideProps: GetServerSideProps = async ({ req, query }) => {
     const { id = '' } = query as { id: string };  // your fetch function here 
-    const session:any = await getSession({ req });
 
-    if (!session) {
-        return {
-            redirect: {
-                destination: `/auth/login?p=/orders/${ id }`,
-                permanent: false,
-            }
-        }
-    }
+
 
     const order = await dbOrders.getOrderById( id );
 
     if ( !order ) {
         return {
             redirect: {
-                destination: `orders/history`,
+                destination: `/admin/orders`,
                 permanent: false,
             }
         }
     }
 
-    if ( order.user !== session.user._id ) {
-        return {
-            redirect: {
-                destination: `orders/history`,
-                permanent: false,
-            }
-        }
-    } 
+    // if ( order.user !== session.user._id ) {
+    //     return {
+    //         redirect: {
+    //             destination: `orders/history`,
+    //             permanent: false,
+    //         }
+    //     }
+    // } 
 
     return {
         props: {

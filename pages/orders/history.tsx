@@ -79,9 +79,8 @@ const HistoryPage: NextPage<Props> = ( { orders } ) => {
                         columns={ columns } 
                         pageSize={ 10 }
                         rowsPerPageOptions={[10]}
-                    >
+                    />
 
-                    </DataGrid>
 
                 </Grid>
                 

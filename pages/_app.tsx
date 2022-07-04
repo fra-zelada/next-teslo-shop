@@ -5,10 +5,12 @@ import { CssBaseline, ThemeProvider } from '@mui/material'
 import { lightTheme } from '../themes';
 import { SWRConfig } from 'swr';
 import { AuthProvider, CartProvider, UiProvider } from '../context';
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <SessionProvider>
+      <PayPalScriptProvider options={{ "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '' }}>
     <SWRConfig 
       value={{
         // refreshInterval: 500,
@@ -28,6 +30,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       </AuthProvider>
       </SWRConfig>
 
+    </PayPalScriptProvider>
     </SessionProvider>
 
 

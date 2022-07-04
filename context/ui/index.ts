@@ -1,5 +1,5 @@
 
 
-export * from './UIContext'
+export * from './UiContext'
 export * from './UiProvider'
 export * from './uiReducer'
