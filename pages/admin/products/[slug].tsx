@@ -97,7 +97,7 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
     const onFilesSelected = async({ target }: ChangeEvent<HTMLInputElement>) => {
             
         if( !target.files || target.files.length === 0) {
-
+            return;
         }
         
         
