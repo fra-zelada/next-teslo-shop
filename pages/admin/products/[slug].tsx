@@ -4,7 +4,7 @@ import { AdminLayout } from '../../../components/layouts'
 import { IProduct } from '../../../interfaces';
 import { AddOutlined, DriveFileRenameOutline, SaveOutlined, UploadOutlined } from '@mui/icons-material';
 import { dbProducts } from '../../../database';
-import { Box, Button, capitalize, Card, CardActions, CardMedia, Checkbox, Chip, Divider, FormControl, FormControlLabel, FormGroup, FormLabel, Grid, ListItem, Paper, Radio, RadioGroup, TextField } from '@mui/material';
+import { Box, Button, capitalize, Card, CardActions, CardMedia, Checkbox, Chip, Divider, FormControl, FormControlLabel, FormGroup, FormLabel, Grid, LinearProgress, ListItem, Paper, Radio, RadioGroup, TextField } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { tesloApi } from '../../../api';
 import { Product } from '../../../models';
@@ -108,13 +108,19 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
                 const formData = new FormData();
                 formData.append('file', file);
                 const { data } = await tesloApi.post<{message: string}>('/admin/upload', formData)
-                console.log(data);
+                setValue( 'images' , [...getValues('images'), data.message], { shouldValidate: true})
             }
 
         } catch (error) {
             
         }
 
+    }
+
+    const onDeleteImage = ( image: string ) => {
+        setValue('images', 
+                    getValues('images').filter( img => img !== image), 
+                    { shouldValidate: true } )
     }
 
     const onSubmit = async(form: FormData) => {
@@ -135,6 +141,7 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
             } else {
                 setIsSaving( false );
             }
+
         } catch (error) {
             console.log(error);
             setIsSaving( false );
@@ -149,9 +156,9 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
             subTitle={`Editando: ${ product.title }`}
             icon={ <DriveFileRenameOutline /> }
         >
-            
+            { isSaving && (<LinearProgress />) }
 
-            <form onSubmit={ handleSubmit( onSubmit )}>
+            <form onSubmit={ handleSubmit( onSubmit )}  style={{ marginTop: 2 }}>
                 <Box display='flex' justifyContent='end' sx={{ mb: 1 }}>
                     <Button 
                         color="secondary"
@@ -357,21 +364,26 @@ const ProductAdminPage:FC<Props> = ({ product }) => {
                                 label="Es necesario al 2 imagenes"
                                 color='error'
                                 variant='outlined'
+                                sx={{ display: getValues('images').length < 2 ? 'flex' : 'none' }}
                             />
 
                             <Grid container spacing={2}>
                                 {
-                                    product.images.map( img => (
+                                    getValues('images').map( img => (
                                         <Grid item xs={4} sm={3} key={img}>
                                             <Card>
                                                 <CardMedia 
                                                     component='img'
                                                     className='fadeIn'
-                                                    image={ `/products/${ img }` }
+                                                    image={ `${ img }` }
                                                     alt={ img }
                                                 />
                                                 <CardActions>
-                                                    <Button fullWidth color="error">
+                                                    <Button 
+                                                        fullWidth 
+                                                        color="error"
+                                                        onClick={ ()=> onDeleteImage(img) }
+                                                    >
                                                         Borrar
                                                     </Button>
                                                 </CardActions>

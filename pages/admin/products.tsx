@@ -22,7 +22,7 @@ const columns: GridColDef[] = [
                         component="img"
                         alt={ row.title }
                         className='fadeIn'
-                        image={`/products/${ row.img }`}
+                        image={ row.img }
                     />
                 </a>
             )
@@ -56,7 +56,7 @@ const ProductsPage = () => {
     const { data, error} = useSWR<IProduct[]>('/api/admin/products');
 
     if ( !data && !error) return (<>Loading...</>);
-
+    
     const rows= data?.map( product=> ({
         id: product._id,
         img: product.images[0],
@@ -68,6 +68,10 @@ const ProductsPage = () => {
         sizer: product.sizes.join(', '),
         slug: product.slug
     }))
+
+    console.log(rows)
+
+    
 
     return (
         <AdminLayout 
